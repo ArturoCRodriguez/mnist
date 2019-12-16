@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 mnist_train = pd.read_csv("mnist_train.csv")
 mnist_test = pd.read_csv("mnist_test.csv")
-X_train, y_train = mnist_train.loc[:,mnist_train.columns != "label"].values , mnist_train.loc[:,["label"]].values
+X_train, y_train = mnist_train.loc[:,mnist_train.columns != "label"].values.ravel() , mnist_train.loc[:,["label"]].values.ravel()
 X_test, y_test = mnist_test.loc[:,mnist_test.columns != "label"].values , mnist_test.loc[:,["label"]].values
 # print(type(X_train))
 print(X_test.shape)
@@ -28,16 +28,16 @@ y_test_5 = (y_test == 5)
 #%%
 from sklearn.linear_model import SGDClassifier
 sgd_clf = SGDClassifier(random_state=42)
-sgd_clf.fit(X_train,y_train_5)
-sgd_clf.predict([some_digit])
+sgd_clf.fit(X_train.reshape(-1, 1) ,y_train_5)
+# sgd_clf.predict([some_digit])
 
 # %%
 from sklearn.model_selection import cross_val_score
-cross_val_score(sgd_clf,X_train, y_train_5, cv=3, scoring="accuracy")
+cross_val_score(sgd_clf,X_train.reshape(-1, 1) , y_train_5 , cv=3, scoring="accuracy")
 #%%
 from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import confusion_matrix
-y_train_pred = cross_val_predict(sgd_clf,X_train, y_train_5, cv=3)
+y_train_pred = cross_val_predict(sgd_clf,X_train.reshape(-1, 1) , y_train_5, cv=3)
 confusion_matrix(y_train_5, y_train_pred)
 
 # %%
@@ -47,7 +47,10 @@ print(recall_score(y_train_5, y_train_pred))
 print(f1_score(y_train_5, y_train_pred))
 
 # %%
-y_scores = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3, method="decision_function")
+print(y_train_5)
+y_scores = cross_val_predict(sgd_clf, X_train.reshape(-1, 1) , y_train_5, cv=3, method="decision_function")
+
+#%%
 from sklearn.metrics import precision_recall_curve
 precisions, recalls, thresholds = precision_recall_curve(y_train_5, y_scores)
 def plot_precision_recall_vs_threshold(precisions, recalls, thresholds):
